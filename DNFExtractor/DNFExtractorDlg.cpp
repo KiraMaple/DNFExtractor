@@ -279,6 +279,7 @@ void CDNFExtractorDlg::OnBnClickedCloseFile()
 void CDNFExtractorDlg::OnLvnItemchangedImgList(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	*pResult = 0;
 
 	if (pNMLV->uNewState == (LVIS_FOCUSED | LVIS_SELECTED))
 	{
@@ -297,12 +298,12 @@ void CDNFExtractorDlg::OnLvnItemchangedImgList(NMHDR *pNMHDR, LRESULT *pResult)
 		UpdatePngList();
 	}
 
-	*pResult = 0;
 }
 
 void CDNFExtractorDlg::OnLvnItemchangedPngList(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	*pResult = 0;
 
 	if (pNMLV->uNewState == (LVIS_FOCUSED | LVIS_SELECTED))
 	{
@@ -321,7 +322,6 @@ void CDNFExtractorDlg::OnLvnItemchangedPngList(NMHDR *pNMHDR, LRESULT *pResult)
 		UpdatePngRender(nPos);
 	}
 
-	*pResult = 0;
 }
 
 void CDNFExtractorDlg::UpdatePngList()
