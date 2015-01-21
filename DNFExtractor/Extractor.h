@@ -127,6 +127,8 @@ public:
 	HRESULT LoadImageFromBuffer(void* pBuffer, int nSize, CImage& img);
 
 private:
+	HWND m_hMainWindow;
+
 	bool		m_bIsLoad;
 	CFile		m_oFile;
 	CString		m_szFilename;

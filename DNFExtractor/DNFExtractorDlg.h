@@ -24,9 +24,11 @@ public:
 
 // й╣ож
 protected:
+	bool m_bIsLoadPng;
+	bool m_bIsRealPos;
+
 	HICON m_hIcon;
 	HBITMAP m_hPngBitmap;
-	bool m_bIsLoadPng;
 	CString m_szFilename;
 	CString m_szSearchTxt;
 	CListCtrl* m_wndImgList;
@@ -50,4 +52,6 @@ public:
 	afx_msg void OnBnClickedCloseFile();
 	afx_msg void OnLvnItemchangedImgList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnItemchangedPngList(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnBnClickedTrueposCheck();
+	afx_msg void OnBnClickedRealposCheck();
 };

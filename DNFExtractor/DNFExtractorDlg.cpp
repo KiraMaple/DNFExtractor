@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CDNFExtractorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CLOSE_FILE, &CDNFExtractorDlg::OnBnClickedCloseFile)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_IMG_LIST, &CDNFExtractorDlg::OnLvnItemchangedImgList)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_PNG_LIST, &CDNFExtractorDlg::OnLvnItemchangedPngList)
+	ON_BN_CLICKED(IDC_REALPOS_CHECK, &CDNFExtractorDlg::OnBnClickedRealposCheck)
 END_MESSAGE_MAP()
 
 
@@ -60,7 +61,10 @@ BOOL CDNFExtractorDlg::OnInitDialog()
 	m_poExtractor = NULL;
 	m_szFilename = "";
 	m_szSearchTxt = "";
-	m_bIsLoadPng = false;
+
+	m_bIsRealPos = FALSE;
+	m_bIsLoadPng = FALSE;
+
 	m_pstPngIndex = NULL;
 
 	m_wndOpenBtn = (CButton*)GetDlgItem(IDC_OPEN_FILE);
@@ -149,16 +153,25 @@ void CDNFExtractorDlg::OnPaint()
 				return;
 			}
 
-
 			CWnd* pPictureCtrl = GetDlgItem(IDC_PNG_RENDER);
 			CDC * pDc = pPictureCtrl->GetWindowDC();    //获得显示控件的DC
-			pDc->SetStretchBltMode(STRETCH_HALFTONE);	 //保持图片不失真
+			pDc->SetStretchBltMode(STRETCH_DELETESCANS);	 //保持图片不失真
 
 			CRect imageRect;
-			imageRect.left = m_pstPngIndex->m_stHeader.key_x;
-			imageRect.right = imageRect.left + oImage.GetWidth();
-			imageRect.top = m_pstPngIndex->m_stHeader.key_y;
-			imageRect.bottom = imageRect.top + oImage.GetHeight();
+			if (m_bIsRealPos)
+			{
+				imageRect.left = m_pstPngIndex->m_stHeader.key_x;
+				imageRect.right = imageRect.left + oImage.GetWidth();
+				imageRect.top = m_pstPngIndex->m_stHeader.key_y;
+				imageRect.bottom = imageRect.top + oImage.GetHeight();
+			}
+			else
+			{
+				imageRect.left = 0;
+				imageRect.right = oImage.GetWidth();
+				imageRect.top = 0;
+				imageRect.bottom = oImage.GetHeight();
+			}
 			oImage.Draw(pDc->m_hDC, imageRect);
 			ReleaseDC(pDc);
 			oImage.Destroy();
@@ -405,4 +418,25 @@ void CDNFExtractorDlg::UpdatePngRender(int nPos)
 
 	this->Invalidate();
 	m_bIsLoadPng = TRUE;
+}
+
+void CDNFExtractorDlg::OnBnClickedRealposCheck()
+{
+	if (BST_CHECKED == IsDlgButtonChecked(IDC_REALPOS_CHECK))
+	{
+		if (m_bIsRealPos == TRUE)
+		{
+			return;
+		}
+		m_bIsRealPos = TRUE;
+	}
+	else
+	{
+		if (m_bIsRealPos == FALSE)
+		{
+			return;
+		}
+		m_bIsRealPos = FALSE;
+	}
+	Invalidate();
 }

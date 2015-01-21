@@ -1,15 +1,14 @@
 #include "stdafx.h"
-#include "Extractor.h"
 #include <stdlib.h>
+#include "Extractor.h"
 
 char CExtractor::s_szFileNameFlag[MAX_FILENAME_LENGTH] = "puchikon@neople dungeon and fighter DNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNFDNF";
 char CExtractor::s_szHeaderFlag[MAX_HEADER_FLAG] = "NeoplePack_Bill";
 char CExtractor::s_szImgFlag[MAX_HEADER_FLAG] = "Neople Img File";
 
-#define ZLIB_EFFICIENCY 5
-
 CExtractor::CExtractor(CString szFilename)
 {
+	m_hMainWindow = AfxGetMainWnd()->GetSafeHwnd();
 	m_bIsLoad = false;
 	m_szFilename = "";
 	//memset(&m_stHeader, 0, sizeof(m_stHeader));
@@ -22,14 +21,14 @@ CExtractor::CExtractor(CString szFilename)
 
 	if ( !(m_oFile.Open(szFilename, CFile::modeRead)))
 	{
-		MessageBox(NULL, _T("Can not Open This File.\nThis File does not exist Or It is used by another application."), _T("Waning!"), MB_OK);
+		MessageBox(m_hMainWindow, _T("Can not Open This File.\nThis File does not exist Or It is used by another application."), _T("Waning!"), MB_OK);
 		return;
 	}
 
 	ULONGLONG ullFileSize = m_oFile.GetLength();
 	if (ullFileSize > UINT_MAX)
 	{
-		MessageBox(NULL, _T("Can not Open This File.\nThis File is too big."), _T("Waning!"), MB_OK);
+		MessageBox(m_hMainWindow, _T("Can not Open This File.\nThis File is too big."), _T("Waning!"), MB_OK);
 		return;
 	}
 	UINT dwFileSize = (UINT)ullFileSize;
@@ -99,7 +98,7 @@ void CExtractor::LoadImgData( UINT dwOffset )
 
 	if (strcmp(m_stActiveImgHeader.flag, s_szImgFlag) != 0)
 	{
-		MessageBox(NULL, _T("This Img is invalid."), _T("Warning"), MB_OK);
+		MessageBox(m_hMainWindow, _T("This Img is invalid."), _T("Warning"), MB_OK);
 		memset(&m_stActiveImgHeader, 0, sizeof(m_stActiveImgHeader));
 		return;
 	}
@@ -179,7 +178,7 @@ void CExtractor::LoadImgData( UINT dwOffset )
 			ASSERT(ret == Z_OK);
 			if (ret != Z_OK)
 			{
-				MessageBox(NULL, _T("A File Uncompress Failed."), _T("Error"), MB_OK);
+				MessageBox(m_hMainWindow, _T("A File Uncompress Failed."), _T("Error"), MB_OK);
 			}
 			else
 			{
@@ -193,7 +192,7 @@ void CExtractor::LoadImgData( UINT dwOffset )
 		}
 		else
 		{
-			MessageBox(NULL, _T("A File Compress Type is invalid."), _T("Error"), MB_OK);
+			MessageBox(m_hMainWindow, _T("A File Compress Type is invalid."), _T("Error"), MB_OK);
 			ASSERT(0);
 		}
 	}
