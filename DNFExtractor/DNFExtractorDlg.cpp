@@ -303,7 +303,7 @@ void CDNFExtractorDlg::UpdatePngList()
 
 			if (pstHeader->m_dwIsLink)
 			{
-				szText = _T("LINK型");
+				szText.Format("LINK型链接至%u", pstHeader->m_dwLinkId);
 			}
 			else
 			{

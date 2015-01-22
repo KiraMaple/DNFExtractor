@@ -106,8 +106,6 @@ void CExtractor::LoadImgData( UINT dwOffset )
 
 	m_vPngIndex.clear();
 
-	NImgF_Index stPreIndex;
-
 	for (int i = 0; i < m_stActiveImgHeader.index_count; i++)
 	{
 		NImgF_Index stIndex;
@@ -116,8 +114,18 @@ void CExtractor::LoadImgData( UINT dwOffset )
 
 		if (stIndex.m_stType.dwType == ARGB_LINK)
 		{
-			stIndex = stPreIndex;
 			stIndex.m_dwIsLink = 1;
+			//这个时候压缩方式是linkId
+			stIndex.m_dwLinkId = stIndex.m_stType.dwCompress;
+			stIndex.m_stType = m_vPngIndex[stIndex.m_dwLinkId].m_stType;
+			if (stIndex.m_dwLinkId < i)
+			{
+				stIndex.m_stHeader = m_vPngIndex[stIndex.m_dwLinkId].m_stHeader;
+			}
+			else
+			{
+				TRACE("LinkId is bigger than itself.");
+			}
 		}
 		else
 		{
@@ -126,8 +134,6 @@ void CExtractor::LoadImgData( UINT dwOffset )
 		}
 
 		m_vPngIndex.push_back(stIndex);
-
-		stPreIndex = stIndex;
 	}
 
 	m_oFile.Seek(dwOffset + m_stActiveImgHeader.index_size + 32, CFile::begin);
@@ -140,10 +146,18 @@ void CExtractor::LoadImgData( UINT dwOffset )
 
 		if (stIndex.m_dwIsLink != FALSE)
 		{
-			if (pPreIndex != NULL)
+			UINT dwLink = stIndex.m_dwLinkId;
+			if (dwLink < (m_vPngIndex.size() - 1))
 			{
-				stIndex.m_dwBufferSize = pPreIndex->m_dwBufferSize;
-				stIndex.m_pData = pPreIndex->m_pData;
+				const NImgF_Index& stLinkIndex = m_vPngIndex[dwLink];
+				stIndex.m_dwBufferSize = stLinkIndex.m_dwBufferSize;
+				stIndex.m_pData = stLinkIndex.m_pData;
+			}
+			else
+			{
+				stIndex.m_dwBufferSize = 0;
+				stIndex.m_pData = 0;
+				TRACE("LinkId is bigger than itself.");
 			}
 			continue;
 		}
@@ -163,8 +177,6 @@ void CExtractor::LoadImgData( UINT dwOffset )
 			stIndex.m_pData = new BYTE[nBufferSize];
 			m_oFile.Read(stIndex.m_pData, nBufferSize);
 			stIndex.m_dwBufferSize = nBufferSize;
-
-			pPreIndex = &stIndex;
 		}
 		else if (stIndex.m_stType.dwCompress == COMPRESS_ZLIB)
 		{
@@ -185,7 +197,6 @@ void CExtractor::LoadImgData( UINT dwOffset )
 			{
 				stIndex.m_pData = new BYTE[stIndex.m_dwBufferSize];
 				memcpy(stIndex.m_pData, pUnzipBuffer, stIndex.m_dwBufferSize);
-				pPreIndex = &stIndex;
 			}
 
 			delete[] pUnzipBuffer;

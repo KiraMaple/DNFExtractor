@@ -67,6 +67,7 @@ public:
 	struct NImgF_Index
 	{
 		unsigned int m_dwIsLink;
+		unsigned int m_dwLinkId;
 		unsigned long m_dwBufferSize;
 		BYTE* m_pData;
 		NPngF_Type m_stType;

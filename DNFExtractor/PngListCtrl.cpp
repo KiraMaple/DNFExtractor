@@ -110,7 +110,7 @@ void CPngListCtrl::ExportFile(bool bIsTeam)
 		}
 	}
 
-	int nTeamWidth = 0, nTeamHeight = 0 , nTeamX = 0, nTeamY = 0;
+	int nTeamMinX = 0x7fffffff, nTeamMinY = 0x7fffffff, nTeamMaxX = 0, nTeamMaxY = 0;
 	if (bIsTeam)
 	{
 		POSITION pos = GetFirstSelectedItemPosition();
@@ -123,19 +123,30 @@ void CPngListCtrl::ExportFile(bool bIsTeam)
 				continue;
 			}
 
-			if (nTeamWidth < pstIndex->m_stHeader.width)
+			CExtractor::NPngF_Info stHeader = pstIndex->m_stHeader;
+			if (nTeamMinX > stHeader.key_x)
 			{
-				nTeamWidth = pstIndex->m_stHeader.width;
-				nTeamX = pstIndex->m_stHeader.key_x;
+				nTeamMinX = stHeader.key_x;
 			}
 
-			if (nTeamHeight < pstIndex->m_stHeader.height)
+			if (nTeamMinY > stHeader.key_y)
 			{
-				nTeamHeight = pstIndex->m_stHeader.height;
-				nTeamY = pstIndex->m_stHeader.key_y;
+				nTeamMinY = stHeader.key_y;
+			}
+
+			if (nTeamMaxX < (stHeader.key_x + stHeader.width))
+			{
+				nTeamMaxX = stHeader.key_x + stHeader.width;
+			}
+
+			if (nTeamMaxY < (stHeader.key_y + stHeader.height))
+			{
+				nTeamMaxY = stHeader.key_y + stHeader.height;
 			}
 		}
 	}
+
+	int nTeamWidth = nTeamMaxX - nTeamMinX, nTeamHeight = nTeamMaxY - nTeamMinY;
 
 	BYTE* pBuff = new BYTE[CExtractor::s_dwBufferSize];
 	int nSuccess = 0;
@@ -155,8 +166,8 @@ void CPngListCtrl::ExportFile(bool bIsTeam)
 
 		if (bIsTeam)
 		{
-			int x = pstIndex->m_stHeader.key_x - nTeamX;
-			int y = pstIndex->m_stHeader.key_y - nTeamY;
+			int x = pstIndex->m_stHeader.key_x - nTeamMinX;
+			int y = pstIndex->m_stHeader.key_y - nTeamMinY;
 			ret = CExtractor::NpkToPng(pBuff, dwBufferSize, pstIndex->m_pData, pstIndex->m_dwBufferSize, pstIndex->m_stHeader.width, pstIndex->m_stHeader.height, pstIndex->m_stType.dwType, x, y, nTeamWidth, nTeamHeight);
 		}
 		else
