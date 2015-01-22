@@ -27,6 +27,12 @@ void CDNFExtractorDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CDNFExtractorDlg)
 	DDX_Text(pDX, IDC_FILENAME_EDIT, m_szFilename);
+	DDX_Control(pDX, IDC_IMG_LIST, m_wndImgList);
+	DDX_Control(pDX, IDC_PNG_LIST, m_wndPngList);
+	DDX_Control(pDX, IDC_OPEN_FILE, m_wndOpenBtn);
+	DDX_Control(pDX, IDC_CLOSE_FILE, m_wndCloseBtn);
+	DDX_Control(pDX, IDC_SEARCH_CLEAR, m_wndSearchClrBtn);
+	DDX_Check(pDX, IDC_REALPOS_CHECK, m_wndPngRender.m_nIsRealPos);
 	//}}AFX_DATA_MAP
 }
 
@@ -55,42 +61,39 @@ BOOL CDNFExtractorDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	ShowWindow(SW_MINIMIZE);
+	CRect rect;
+	CStatic* pRender = (CStatic*)GetDlgItem(IDC_PNG_RECT);
+	pRender->GetWindowRect(&rect);
+	ScreenToClient(rect);
 
-	// TODO:  在此添加额外的初始化代码
+	m_wndPngRender.Create(IDD_PNG_DIALOG, this);
+	m_wndPngRender.MoveWindow(rect);
+	m_wndPngRender.ResizeRender();
+	m_wndPngRender.ShowWindow(SW_SHOWNORMAL);
+	pRender->ShowWindow(SW_HIDE);
+
 	m_poExtractor = NULL;
 	m_szFilename = "";
 	m_szSearchTxt = "";
 
-	m_bIsRealPos = FALSE;
-	m_bIsLoadPng = FALSE;
+	m_wndCloseBtn.EnableWindow(FALSE);
 
-	m_pstPngIndex = NULL;
+	m_wndImgList.InsertColumn(0, _T("文件名"), LVCFMT_CENTER, 185);
 
-	m_wndOpenBtn = (CButton*)GetDlgItem(IDC_OPEN_FILE);
-	m_wndCloseBtn = (CButton*)GetDlgItem(IDC_CLOSE_FILE);
-	m_wndSearchClrBtn = (CButton*)GetDlgItem(IDC_SEARCH_CLEAR);
-
-	m_wndCloseBtn->EnableWindow(FALSE);
-
-	m_wndImgList = (CListCtrl*)this->GetDlgItem(IDC_IMG_LIST);
-	m_wndImgList->InsertColumn(0, _T("文件名"), LVCFMT_CENTER, 185);
-
-	m_wndPngList = (CListCtrl*)this->GetDlgItem(IDC_PNG_LIST);
-	m_wndPngList->InsertColumn(0, _T("ID"), LVCFMT_CENTER, 50);
-	m_wndPngList->InsertColumn(1, _T("模式"), LVCFMT_CENTER, 150);
-	m_wndPngList->InsertColumn(2, _T("宽高"), LVCFMT_CENTER, 80);
-	m_wndPngList->InsertColumn(3, _T("坐标"), LVCFMT_CENTER, 80);
-	m_wndPngList->InsertColumn(4, _T("帧域宽高"), LVCFMT_CENTER, 100);
+	m_wndPngList.InsertColumn(0, _T("ID"), LVCFMT_CENTER, 50);
+	m_wndPngList.InsertColumn(1, _T("模式"), LVCFMT_CENTER, 150);
+	m_wndPngList.InsertColumn(2, _T("宽高"), LVCFMT_CENTER, 80);
+	m_wndPngList.InsertColumn(3, _T("坐标"), LVCFMT_CENTER, 80);
+	m_wndPngList.InsertColumn(4, _T("帧域宽高"), LVCFMT_CENTER, 100);
 
 	DWORD dwStyle = 0;
-	dwStyle = m_wndImgList->GetExtendedStyle();
+	dwStyle = m_wndImgList.GetExtendedStyle();
 	dwStyle |= LVS_EX_FULLROWSELECT;
-	m_wndImgList->SetExtendedStyle(dwStyle);
+	m_wndImgList.SetExtendedStyle(dwStyle);
 
-	dwStyle = m_wndPngList->GetExtendedStyle();
+	dwStyle = m_wndPngList.GetExtendedStyle();
 	dwStyle |= LVS_EX_FULLROWSELECT;
-	m_wndPngList->SetExtendedStyle(dwStyle);
+	m_wndPngList.SetExtendedStyle(dwStyle);
 
 	UpdateData(FALSE);
 
@@ -125,58 +128,6 @@ void CDNFExtractorDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-
-		if (m_bIsLoadPng && m_pstPngIndex && m_poExtractor)
-		{
-			UINT dwBufferSize = CExtractor::s_dwBufferSize;
-			BYTE* pBuff = new BYTE[dwBufferSize];
-
-			int ret = m_poExtractor->NpkToPng(pBuff, dwBufferSize, m_pstPngIndex->m_pData, m_pstPngIndex->m_dwBufferSize, m_pstPngIndex->m_stHeader.width, m_pstPngIndex->m_stHeader.height, m_pstPngIndex->m_stType.dwType);
-
-			if (ret)
-			{
-				delete[] pBuff;
-				m_bIsLoadPng = FALSE;
-				m_pstPngIndex = NULL;
-				this->Invalidate();
-				MessageBox("图像转换失败！", "Error", MB_OK);
-				return;
-			}
-
-			CImage oImage;
-			if ( FAILED( m_poExtractor->LoadImageFromBuffer(pBuff, dwBufferSize, oImage) ) )
-			{
-				delete[] pBuff;
-				m_bIsLoadPng = FALSE;
-				m_pstPngIndex = NULL;
-				oImage.Destroy();
-				return;
-			}
-
-			CWnd* pPictureCtrl = GetDlgItem(IDC_PNG_RENDER);
-			CDC * pDc = pPictureCtrl->GetWindowDC();    //获得显示控件的DC
-			pDc->SetStretchBltMode(STRETCH_DELETESCANS);	 //保持图片不失真
-
-			CRect imageRect;
-			if (m_bIsRealPos)
-			{
-				imageRect.left = m_pstPngIndex->m_stHeader.key_x;
-				imageRect.right = imageRect.left + oImage.GetWidth();
-				imageRect.top = m_pstPngIndex->m_stHeader.key_y;
-				imageRect.bottom = imageRect.top + oImage.GetHeight();
-			}
-			else
-			{
-				imageRect.left = 0;
-				imageRect.right = oImage.GetWidth();
-				imageRect.top = 0;
-				imageRect.bottom = oImage.GetHeight();
-			}
-			oImage.Draw(pDc->m_hDC, imageRect);
-			ReleaseDC(pDc);
-			oImage.Destroy();
-			delete[] pBuff;
-		}
 	}
 }
 
@@ -243,8 +194,8 @@ void CDNFExtractorDlg::OnBnClickedOpenFile()
 	m_szFilename = dlg.GetPathName();
 	m_szFilename = m_szFilename.Mid(m_szFilename.ReverseFind('\\') + 1);
 	UpdateData(FALSE);
-	m_wndOpenBtn->EnableWindow(FALSE);
-	m_wndCloseBtn->EnableWindow(TRUE);
+	m_wndOpenBtn.EnableWindow(FALSE);
+	m_wndCloseBtn.EnableWindow(TRUE);
 
 	int nImgCount = m_poExtractor->GetImgCount();
 	for (int i = 0; i < nImgCount; i++)
@@ -254,15 +205,15 @@ void CDNFExtractorDlg::OnBnClickedOpenFile()
 		{
 			CString strFileName = poIndex->name;
 			strFileName = strFileName.Mid(strFileName.ReverseFind('/') + 1);
-			m_wndImgList->InsertItem(i, strFileName);
+			m_wndImgList.InsertItem(i, strFileName);
 		}
 	}
 
 	if (nImgCount > 0)
 	{
-		m_wndImgList->EnsureVisible(0, FALSE);
-		m_wndImgList->SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-		m_wndImgList->SetFocus();
+		m_wndImgList.EnsureVisible(0, FALSE);
+		m_wndImgList.SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		m_wndImgList.SetFocus();
 	}
 }
 
@@ -278,15 +229,13 @@ void CDNFExtractorDlg::OnBnClickedCloseFile()
 
 	m_szFilename = "";
 	UpdateData(FALSE);
-	m_wndOpenBtn->EnableWindow(TRUE);
-	m_wndCloseBtn->EnableWindow(FALSE);
+	m_wndOpenBtn.EnableWindow(TRUE);
+	m_wndCloseBtn.EnableWindow(FALSE);
 
-	m_bIsLoadPng = FALSE;
-	m_pstPngIndex = NULL;
-	Invalidate();
+	m_wndPngRender.Clear();
 
-	m_wndImgList->DeleteAllItems();
-	m_wndPngList->DeleteAllItems();
+	m_wndImgList.DeleteAllItems();
+	m_wndPngList.DeleteAllItems();
 }
 
 void CDNFExtractorDlg::OnLvnItemchangedImgList(NMHDR *pNMHDR, LRESULT *pResult)
@@ -339,7 +288,7 @@ void CDNFExtractorDlg::OnLvnItemchangedPngList(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CDNFExtractorDlg::UpdatePngList()
 {
-	m_wndPngList->DeleteAllItems();
+	m_wndPngList.DeleteAllItems();
 
 	int nCount = m_poExtractor->GetPngCount();
 
@@ -350,7 +299,7 @@ void CDNFExtractorDlg::UpdatePngList()
 		{
 			CString szText = _T("");
 			szText.Format(_T("%d"), i);
-			m_wndPngList->InsertItem(i, szText);
+			m_wndPngList.InsertItem(i, szText);
 
 			if (pstHeader->m_dwIsLink)
 			{
@@ -375,32 +324,34 @@ void CDNFExtractorDlg::UpdatePngList()
 					szText = _T("Unkown");
 				}
 			}
-			m_wndPngList->SetItemText(i, 1, szText);
+			m_wndPngList.SetItemText(i, 1, szText);
 
 			szText.Format(_T("%4d x %4d"), pstHeader->m_stHeader.width, pstHeader->m_stHeader.height);
-			m_wndPngList->SetItemText(i, 2, szText);
+			m_wndPngList.SetItemText(i, 2, szText);
 
 			szText.Format(_T("(%4d,%4d )"), pstHeader->m_stHeader.key_x, pstHeader->m_stHeader.key_y);
-			m_wndPngList->SetItemText(i, 3, szText);
+			m_wndPngList.SetItemText(i, 3, szText);
 
 			szText.Format(_T("%4d x %4d"), pstHeader->m_stHeader.max_width, pstHeader->m_stHeader.max_height);
-			m_wndPngList->SetItemText(i, 4, szText);
+			m_wndPngList.SetItemText(i, 4, szText);
+
+			m_wndPngList.SetItemData(i, (DWORD_PTR)pstHeader);
 		}
 	}
 
 	if (nCount > 0)
 	{
-		m_wndPngList->EnsureVisible(0, FALSE);
-		m_wndPngList->SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-		m_wndPngList->SetFocus();
+		m_wndPngList.EnsureVisible(0, FALSE);
+		m_wndPngList.SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		m_wndPngList.SetFocus();
 	}
 }
 
 void CDNFExtractorDlg::UpdatePngRender(int nPos)
 {
-	if (m_bIsLoadPng)
+	if (m_wndPngRender.m_bIsLoadPng)
 	{
-		m_bIsLoadPng = FALSE;
+		m_wndPngRender.Clear();
 	}
 
 	if (m_poExtractor == NULL)
@@ -414,29 +365,15 @@ void CDNFExtractorDlg::UpdatePngRender(int nPos)
 		return;
 	}
 
-	m_pstPngIndex = pstIndex;
-
-	this->Invalidate();
-	m_bIsLoadPng = TRUE;
+	m_wndPngRender.SetPngInfo(pstIndex);
 }
 
 void CDNFExtractorDlg::OnBnClickedRealposCheck()
 {
-	if (BST_CHECKED == IsDlgButtonChecked(IDC_REALPOS_CHECK))
+	bool bPre = m_wndPngRender.m_nIsRealPos;
+	UpdateData(TRUE);
+	if (bPre != m_wndPngRender.m_nIsRealPos)
 	{
-		if (m_bIsRealPos == TRUE)
-		{
-			return;
-		}
-		m_bIsRealPos = TRUE;
+		m_wndPngRender.Redraw();
 	}
-	else
-	{
-		if (m_bIsRealPos == FALSE)
-		{
-			return;
-		}
-		m_bIsRealPos = FALSE;
-	}
-	Invalidate();
 }

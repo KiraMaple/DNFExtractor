@@ -32,8 +32,11 @@
 
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
-
-
+namespace custom
+{
+	BOOL isFolderExists(CString szPath);
+	BOOL CreateMuliteDirectory(CString szPath);
+}
 
 
 #ifdef _UNICODE

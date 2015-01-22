@@ -36,6 +36,15 @@
     <ClInclude Include="Extractor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ImgListCtrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PngListCtrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PngRenderDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DNFExtractor.cpp">
@@ -48,6 +57,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Extractor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgListCtrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PngListCtrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PngRenderDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -120,11 +120,13 @@ public:
 	int GetPngCount() const { return m_vPngIndex.size(); }
 	NImgF_Index* GetPngByPos(int nPos);
 
-	int NpkToPng(void* pDestBuff, UINT& dwDestSize, const BYTE* pSrcBuff, UINT dwSrcBuff, int nWidth, int nHeight, int nType, int x = 0, int y = 0, int nDestWidth = 0, int nDestHeight = 0);
+	CString GetFileName();
+	CString GetActiveImgName();
+
+	static int NpkToPng(void* pDestBuff, UINT& dwDestSize, const BYTE* pSrcBuff, UINT dwSrcBuff, int nWidth, int nHeight, int nType, int x = 0, int y = 0, int nDestWidth = 0, int nDestHeight = 0);
 	static void pngWriteCallback(png_structp png_ptr, png_bytep data, png_size_t length);
 	static void pngWriteFlush(png_structp png_ptr);
-
-	HRESULT LoadImageFromBuffer(void* pBuffer, int nSize, CImage& img);
+	static HRESULT LoadImageFromBuffer(void* pBuffer, int nSize, CImage& img);
 
 private:
 	HWND m_hMainWindow;
@@ -132,8 +134,8 @@ private:
 	bool		m_bIsLoad;
 	CFile		m_oFile;
 	CString		m_szFilename;
-	//NPK_Header	m_stHeader;
 	NImgF_Header m_stActiveImgHeader;
+	CString		m_szActiveImgName;
 	std::vector<NPK_Index>	m_vIndex;
 	std::vector<NImgF_Index> m_vPngIndex;
 };

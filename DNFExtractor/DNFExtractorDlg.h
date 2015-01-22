@@ -5,6 +5,9 @@
 #pragma once
 
 #include "Extractor.h"
+#include "ImgListCtrl.h"
+#include "PngListCtrl.h"
+#include "PngRenderDialog.h"
 
 // CDNFExtractorDlg 对话框
 class CDNFExtractorDlg : public CDialogEx
@@ -14,13 +17,13 @@ public:
 	CDNFExtractorDlg(CWnd* pParent = NULL);	// 标准构造函数
 	void UpdatePngList();
 	void UpdatePngRender(int nPos);
+	char* GetActiveImgName();
 
 // 对话框数据
 	enum { IDD = IDD_DNFEXTRACTOR_DIALOG };
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
-
 
 // 实现
 protected:
@@ -31,13 +34,13 @@ protected:
 	HBITMAP m_hPngBitmap;
 	CString m_szFilename;
 	CString m_szSearchTxt;
-	CListCtrl* m_wndImgList;
-	CListCtrl* m_wndPngList;
-	CButton* m_wndOpenBtn;
-	CButton* m_wndCloseBtn;
-	CButton* m_wndSearchClrBtn;
+	CImgListCtrl m_wndImgList;
+	CPngListCtrl m_wndPngList;
+	CPngRenderDialog m_wndPngRender;
+	CButton m_wndOpenBtn;
+	CButton m_wndCloseBtn;
+	CButton m_wndSearchClrBtn;
 	CExtractor* m_poExtractor;
-	CExtractor::NImgF_Index* m_pstPngIndex;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -45,6 +48,8 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	CExtractor* GetExtractor() const { return m_poExtractor; }
+
 	afx_msg void OnEnChangeFilenameEdit();
 	afx_msg void OnBnClickedSearchClear();
 	afx_msg void OnEnChangeSearchEdit();

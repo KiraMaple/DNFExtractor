@@ -19,7 +19,7 @@ CExtractor::CExtractor(CString szFilename)
 		return;
 	}
 
-	if ( !(m_oFile.Open(szFilename, CFile::modeRead)))
+	if (!(m_oFile.Open(szFilename, CFile::modeRead | CFile::shareDenyWrite)))
 	{
 		MessageBox(m_hMainWindow, _T("Can not Open This File.\nThis File does not exist Or It is used by another application."), _T("Waning!"), MB_OK);
 		return;
@@ -86,6 +86,7 @@ void CExtractor::SetActiveImg(int nPos)
 		return;
 	}
 
+	m_szActiveImgName = pstIndex->name;
 	LoadImgData(pstIndex->offset);
 }
 
@@ -209,6 +210,24 @@ CExtractor::NImgF_Index* CExtractor::GetPngByPos(int nPos)
 	return &m_vPngIndex[nPos];
 }
 
+CString CExtractor::GetFileName()
+{
+	CString szRet;
+	int nStart = m_szFilename.ReverseFind('\\') + 1;
+	int nEnd = m_szFilename.ReverseFind('.');
+	szRet = m_szFilename.Mid(nStart, nEnd-nStart);
+	return szRet;
+}
+
+CString CExtractor::GetActiveImgName()
+{
+	CString szRet;
+	int nStart = m_szActiveImgName.ReverseFind('/') + 1;
+	int nEnd = m_szActiveImgName.ReverseFind('.');
+	szRet = m_szActiveImgName.Mid(nStart, nEnd-nStart);
+	return szRet;
+}
+
 int CExtractor::NpkToPng(void* pDestBuff, UINT& dwDestSize, const BYTE* pSrcBuff, UINT dwSrcBuff, int nSrcWidth, int nSrcHeight, int nType, int x/*=0*/, int y/*=0*/, int nDestWidth/*=0*/, int nDestHeight/*=0*/)
 {
 	if (pDestBuff == NULL || pSrcBuff == NULL || dwDestSize == 0 || dwSrcBuff == 0 || dwDestSize < dwSrcBuff)
@@ -285,6 +304,10 @@ int CExtractor::NpkToPng(void* pDestBuff, UINT& dwDestSize, const BYTE* pSrcBuff
 			{
 				continue;;
 			}
+
+			int nSrcHeight = i - y;
+			int nSrcWidth = j - x;
+
 			// png is rgba
 			switch (nType)
 			{

@@ -109,6 +109,9 @@
     <ClInclude Include="DNFExtractor.h" />
     <ClInclude Include="DNFExtractorDlg.h" />
     <ClInclude Include="Extractor.h" />
+    <ClInclude Include="ImgListCtrl.h" />
+    <ClInclude Include="PngListCtrl.h" />
+    <ClInclude Include="PngRenderDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -117,6 +120,9 @@
     <ClCompile Include="DNFExtractor.cpp" />
     <ClCompile Include="DNFExtractorDlg.cpp" />
     <ClCompile Include="Extractor.cpp" />
+    <ClCompile Include="ImgListCtrl.cpp" />
+    <ClCompile Include="PngListCtrl.cpp" />
+    <ClCompile Include="PngRenderDialog.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
