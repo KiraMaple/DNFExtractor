@@ -293,42 +293,42 @@ int CExtractor::NpkToPng(void* pDestBuff, UINT& dwDestSize, const BYTE* pSrcBuff
 		pPngBuff[i] = (png_bytep)malloc(sizeof(unsigned char)* 4 * nDestWidth);
 		memset(pPngBuff[i], 0, sizeof(unsigned char)* 4 * nDestWidth);
 
-		if (i < y || i > (y + nSrcHeight))
+		if (i < y || i >= (y + nSrcHeight))
 		{
 			continue;
 		}
 
 		for (int j = 0; j < nDestWidth; ++j)
 		{
-			if (j < x || j > (x + nSrcWidth))
+			if (j < x || j >= (x + nSrcWidth))
 			{
 				continue;;
 			}
 
-			int nSrcHeight = i - y;
-			int nSrcWidth = j - x;
+			int nSrcY = i - y;
+			int nSrcX = j - x;
 
 			// png is rgba
 			switch (nType)
 			{
 			case ARGB_1555://1555
-				pPngBuff[i][j * 4 + 0] = ((pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 1] & 127) >> 2) << 3;   // red  
-				pPngBuff[i][j * 4 + 1] = (((pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 1] & 0x0003) << 3) |
-					((pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2] >> 5) & 0x0007)) << 3; // green  
-				pPngBuff[i][j * 4 + 2] = (pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2] & 0x003f) << 3; // blue 
-				pPngBuff[i][j * 4 + 3] = (pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 1] >> 7) == 0 ? 0 : 255; // alpha
+				pPngBuff[i][j * 4 + 0] = ((pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 1] & 127) >> 2) << 3;   // red  
+				pPngBuff[i][j * 4 + 1] = (((pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 1] & 0x0003) << 3) |
+					((pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2] >> 5) & 0x0007)) << 3; // green  
+				pPngBuff[i][j * 4 + 2] = (pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2] & 0x003f) << 3; // blue 
+				pPngBuff[i][j * 4 + 3] = (pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 1] >> 7) == 0 ? 0 : 255; // alpha
 				break;
 			case ARGB_4444://4444
-				pPngBuff[i][j * 4 + 0] = (pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 1] & 0x0f) << 4;   // red  
-				pPngBuff[i][j * 4 + 1] = ((pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 0] & 0xf0) >> 4) << 4; // green  
-				pPngBuff[i][j * 4 + 2] = (pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 0] & 0x0f) << 4;; // blue  
-				pPngBuff[i][j * 4 + 3] = ((pSrcBuff[(i - y) * nSrcWidth * 2 + (j - x) * 2 + 1] & 0xf0) >> 4) << 4; // alpha
+				pPngBuff[i][j * 4 + 0] = (pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 1] & 0x0f) << 4;   // red  
+				pPngBuff[i][j * 4 + 1] = ((pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 0] & 0xf0) >> 4) << 4; // green  
+				pPngBuff[i][j * 4 + 2] = (pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 0] & 0x0f) << 4;; // blue  
+				pPngBuff[i][j * 4 + 3] = ((pSrcBuff[nSrcY * nSrcWidth * 2 + nSrcX * 2 + 1] & 0xf0) >> 4) << 4; // alpha
 				break;
 			case ARGB_8888://8888
-				pPngBuff[i][j * 4 + 0] = pSrcBuff[(i - y) * nSrcWidth * 4 + (j - x) * 4 + 2]; // red
-				pPngBuff[i][j * 4 + 1] = pSrcBuff[(i - y) * nSrcWidth * 4 + (j - x) * 4 + 1]; // green
-				pPngBuff[i][j * 4 + 2] = pSrcBuff[(i - y) * nSrcWidth * 4 + (j - x) * 4 + 0]; // blue
-				pPngBuff[i][j * 4 + 3] = pSrcBuff[(i - y) * nSrcWidth * 4 + (j - x) * 4 + 3]; // alpha
+				pPngBuff[i][j * 4 + 0] = pSrcBuff[nSrcY * nSrcWidth * 4 + nSrcX * 4 + 2]; // red
+				pPngBuff[i][j * 4 + 1] = pSrcBuff[nSrcY * nSrcWidth * 4 + nSrcX * 4 + 1]; // green
+				pPngBuff[i][j * 4 + 2] = pSrcBuff[nSrcY * nSrcWidth * 4 + nSrcX * 4 + 0]; // blue
+				pPngBuff[i][j * 4 + 3] = pSrcBuff[nSrcY * nSrcWidth * 4 + nSrcX * 4 + 3]; // alpha
 				break;
 			case ARGB_LINK:// 占位，无图片资源
 				break;
